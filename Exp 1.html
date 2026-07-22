@@ -1,0 +1,214 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Library Management System (Single File)</title>
+<style>
+body{margin:0;font-family:Arial;background:#eef2f7}
+header{background:#1f4e79;color:#fff;padding:15px;text-align:center}
+nav{display:flex;gap:10px;justify-content:center;background:#163b5c;padding:10px;flex-wrap:wrap}
+nav button{padding:10px 15px;border:0;border-radius:5px;background:#fff;cursor:pointer}
+section{display:none;padding:20px}
+.active{display:block}
+.card{background:#fff;padding:15px;border-radius:8px;margin:10px 0;box-shadow:0 2px 5px #bbb}
+input,select,textarea{width:100%;padding:8px;margin:6px 0}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #ccc;padding:8px}
+th{background:#1f4e79;color:#fff}
+</style>
+</head>
+<body>
+<header><h1>📚 Library Management System</h1></header>
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('login')">Login</button>
+<button onclick="show('register')">Register</button>
+<button onclick="show('books')">Books</button>
+<button onclick="show('materials')">Materials</button>
+<button onclick="show('admin')">Admin</button>
+<button onclick="show('contact')">Contact</button>
+</nav>
+
+<section id="home" class="active">
+<div class="card">
+<h2>Welcome</h2>
+<p>This is a demo Library Management System built entirely in one HTML file without a database.</p>
+</div>
+</section>
+
+<section id="login">
+<div class="card">
+<h2>Login</h2>
+<select id="role">
+<option>User</option>
+<option>Admin</option>
+</select>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="loginMsg"></p>
+</div>
+</section>
+
+<section id="register">
+<div class="card">
+<h2>Register</h2>
+<input id="rname" placeholder="Name">
+<input id="remail" placeholder="Email">
+<input id="rpass" placeholder="Password">
+<button onclick="register()">Register</button>
+<p id="regMsg"></p>
+</div>
+</section>
+
+<section id="books">
+<div class="card">
+<h2>Search Book</h2>
+<input id="search" onkeyup="renderBooks()" placeholder="Search">
+<table>
+<thead><tr><th>Book</th><th>Author</th><th>Status</th><th>Action</th></tr></thead>
+<tbody id="bookBody"></tbody>
+</table>
+</div>
+<div class="card">
+<h2>My Borrow History</h2>
+<table>
+<thead><tr><th>Book</th><th>Issue</th><th>Expiry</th><th>Fine</th></tr></thead>
+<tbody id="history"></tbody>
+</table>
+</div>
+</section>
+
+<section id="materials">
+<div class="card">
+<h2>Study Materials</h2>
+<select id="yearFilter" onchange="renderMaterials()">
+<option>All</option><option>1</option><option>2</option><option>3</option><option>4</option>
+</select>
+<table>
+<thead><tr><th>Title</th><th>Year</th><th>Semester</th><th>Download</th></tr></thead>
+<tbody id="matBody"></tbody>
+</table>
+</div>
+</section>
+
+<section id="admin">
+<div class="card">
+<h2>Admin Dashboard</h2>
+<input id="bname" placeholder="Book Name">
+<input id="bauthor" placeholder="Author">
+<button onclick="addBook()">Add Book</button>
+<table>
+<thead><tr><th>Name</th><th>Author</th><th>Action</th></tr></thead>
+<tbody id="adminBooks"></tbody>
+</table>
+<hr>
+<h3>Add Material</h3>
+<input id="mtitle" placeholder="Material Title">
+<select id="myear"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+<select id="msem"><option>1</option><option>2</option></select>
+<button onclick="addMaterial()">Add Material</button>
+</div>
+</section>
+
+<section id="contact">
+<div class="card">
+<h2>Contact Us</h2>
+<input placeholder="Name">
+<input placeholder="Email">
+<textarea placeholder="Message"></textarea>
+<button onclick="alert('Message Sent Successfully')">Send</button>
+</div>
+</section>
+
+<script>
+let books=[
+{name:"Java Programming",author:"James",issued:false},
+{name:"Python Basics",author:"Guido",issued:false},
+{name:"Database Systems",author:"Navathe",issued:false}
+];
+let materials=[
+{title:"CSE Notes",year:"1",sem:"1"},
+{title:"DBMS PDF",year:"2",sem:"2"},
+{title:"AI Notes",year:"4",sem:"1"}
+];
+let history=[];
+
+function show(id){
+document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+renderBooks();renderAdmin();renderMaterials();renderHistory();
+}
+
+function login(){
+let role=document.getElementById("role").value;
+document.getElementById("loginMsg").innerHTML="Logged in as "+role;
+if(role==="Admin")show("admin"); else show("books");
+}
+function register(){
+document.getElementById("regMsg").innerHTML="Registration Successful";
+}
+function renderBooks(){
+let q=document.getElementById("search").value.toLowerCase();
+let out="";
+books.filter(b=>b.name.toLowerCase().includes(q)||b.author.toLowerCase().includes(q))
+.forEach((b,i)=>{
+out+=`<tr><td>${b.name}</td><td>${b.author}</td><td>${b.issued?"Issued":"Available"}</td>
+<td>${b.issued?"<button onclick='returnBook("+i+")'>Return</button>":"<button onclick='issueBook("+i+")'>Issue</button>"}</td></tr>`;
+});
+document.getElementById("bookBody").innerHTML=out;
+}
+function issueBook(i){
+books[i].issued=true;
+let d=new Date();
+let e=new Date();e.setDate(d.getDate()+15);
+history.push({book:books[i].name,issue:d.toLocaleDateString(),exp:e.toLocaleDateString(),fine:0});
+renderBooks();renderHistory();
+}
+function returnBook(i){
+books[i].issued=false;
+if(history.length){
+let h=history.find(x=>x.book===books[i].name);
+if(h){
+let exp=new Date(h.exp);
+let now=new Date();
+let late=Math.max(0,Math.floor((now-exp)/(1000*60*60*24)));
+h.fine=late*10;
+}
+}
+renderBooks();renderHistory();
+}
+function renderHistory(){
+let out="";
+history.forEach(h=>out+=`<tr><td>${h.book}</td><td>${h.issue}</td><td>${h.exp}</td><td>₹${h.fine}</td></tr>`);
+document.getElementById("history").innerHTML=out;
+}
+function addBook(){
+books.push({name:bname.value,author:bauthor.value,issued:false});
+bname.value="";bauthor.value="";
+renderBooks();renderAdmin();
+}
+function renderAdmin(){
+let out="";
+books.forEach((b,i)=>out+=`<tr><td>${b.name}</td><td>${b.author}</td><td><button onclick="books.splice(${i},1);renderBooks();renderAdmin()">Delete</button></td></tr>`);
+adminBooks.innerHTML=out;
+}
+function addMaterial(){
+materials.push({title:mtitle.value,year:myear.value,sem:msem.value});
+mtitle.value="";
+renderMaterials();
+}
+function renderMaterials(){
+let y=yearFilter.value;
+let out="";
+materials.filter(m=>y==="All"||m.year===y).forEach(m=>{
+out+=`<tr><td>${m.title}</td><td>${m.year}</td><td>${m.sem}</td><td><a href="#" onclick="alert('Downloading ${m.title}')">Download</a></td></tr>`;
+});
+matBody.innerHTML=out;
+}
+renderBooks();renderAdmin();renderMaterials();
+</script>
+</body>
+</html>
