@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hotel Booking System</title>
+<style>
+body{margin:0;font-family:Arial;background:#eef2f5}
+header{background:#0b5ed7;color:#fff;padding:15px;text-align:center}
+nav{display:flex;flex-wrap:wrap;justify-content:center;background:#083b8a;padding:8px}
+nav button{margin:4px;padding:10px 14px;border:none;border-radius:5px;cursor:pointer}
+section{display:none;padding:20px}.active{display:block}
+.card{background:#fff;padding:15px;border-radius:8px;margin:10px 0;box-shadow:0 2px 6px #bbb}
+input,select,textarea{width:100%;padding:8px;margin:6px 0}
+table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px}th{background:#0b5ed7;color:#fff}
+</style></head><body>
+<header><h1>🏨 Hotel Room Booking System</h1></header>
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('login')">Login</button>
+<button onclick="show('register')">Register</button>
+<button onclick="show('rooms')">Rooms</button>
+<button onclick="show('bookings')">My Bookings</button>
+<button onclick="show('admin')">Admin</button>
+<button onclick="show('about')">About</button>
+<button onclick="show('contact')">Contact</button>
+<button onclick="show('faq')">Q&A</button>
+<button onclick="show('travel')">Travel Guide</button>
+<button onclick="show('privacy')">Privacy</button>
+</nav>
+
+<section id="home" class="active"><div class="card"><h2>Welcome</h2><p>Search rooms, book online, manage bookings and admin operations. Demo only, no database.</p></div></section>
+
+<section id="login"><div class="card"><h2>Login</h2><select id="role"><option>User</option><option>Admin</option></select><input id="u" placeholder="Username"><input id="p" type="password" placeholder="Password"><button onclick="login()">Login</button><p id="lmsg"></p></div></section>
+
+<section id="register"><div class="card"><h2>Register</h2><input placeholder="Name"><input placeholder="Email"><input placeholder="Phone"><button onclick="alert('Registered Successfully')">Register</button></div></section>
+
+<section id="rooms"><div class="card">
+<h2>Available Rooms</h2>
+<input id="search" onkeyup="renderRooms()" placeholder="Search room">
+<table><thead><tr><th>Type</th><th>Price</th><th>Available</th><th>Action</th></tr></thead><tbody id="roomBody"></tbody></table>
+</div></section>
+
+<section id="bookings"><div class="card">
+<h2>My Booking History</h2>
+<table><thead><tr><th>Room</th><th>Arrival</th><th>Departure</th><th>Status</th><th>Action</th></tr></thead><tbody id="bookingBody"></tbody></table>
+</div></section>
+
+<section id="admin"><div class="card">
+<h2>Administrator Panel</h2>
+<h3>Update Rooms</h3>
+<input id="rtype" placeholder="Room Type"><input id="rprice" placeholder="Price"><input id="rqty" placeholder="Quantity">
+<button onclick="addRoom()">Add / Update</button>
+<table><thead><tr><th>Type</th><th>Price</th><th>Qty</th><th>Action</th></tr></thead><tbody id="adminRooms"></tbody></table>
+<h3>Static Pages Editor</h3>
+<textarea rows="6" placeholder="Modify About, Contact, FAQ, Privacy, Travel Guide"></textarea>
+<button onclick="alert('Static page updated')">Save</button>
+</div></section>
+
+<section id="about"><div class="card"><h2>About Us</h2><p>Luxury hotel with Deluxe, Executive, Family and Suite rooms.</p></div></section>
+<section id="contact"><div class="card"><h2>Contact</h2><p>Email: hotel@example.com<br>Phone: +91 9876543210</p><textarea placeholder="Message"></textarea><button onclick="alert('Message Sent')">Send</button></div></section>
+<section id="faq"><div class="card"><h2>Customer Service Q&A</h2><ul><li>Check-in: 2 PM</li><li>Check-out: 11 AM</li><li>Free cancellation up to 3 days before arrival.</li></ul></div></section>
+<section id="travel"><div class="card"><h2>Local Travel Guide</h2><p>Airport shuttle, taxi, metro, nearby attractions and restaurants.</p></div></section>
+<section id="privacy"><div class="card"><h2>Privacy Policy</h2><p>Your booking information is used only for reservation purposes.</p></div></section>
+
+<script>
+let rooms=[
+{type:"Deluxe",price:3000,qty:10},
+{type:"Executive",price:4500,qty:8},
+{type:"Family",price:6000,qty:5},
+{type:"Suite",price:9000,qty:3}
+];
+let bookings=[];
+
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");renderRooms();renderBookings();renderAdmin();}
+function login(){lmsg.innerHTML="Logged in as "+role.value;if(role.value=="Admin")show("admin");else show("rooms");}
+function renderRooms(){
+let q=search.value.toLowerCase();let h="";
+rooms.filter(r=>r.type.toLowerCase().includes(q)).forEach((r,i)=>{
+h+=`<tr><td>${r.type}</td><td>₹${r.price}</td><td>${r.qty}</td><td><button onclick="book(${i})">Book</button></td></tr>`;
+});roomBody.innerHTML=h;}
+function book(i){
+let arr=prompt("Arrival Date (YYYY-MM-DD)");
+if(!arr)return;
+let dep=prompt("Departure Date (YYYY-MM-DD)");
+bookings.push({room:rooms[i].type,arr,dep,status:"Confirmed"});
+alert("Payment Successful (Demo)\nBooking Confirmed\nConfirmation Email Sent (Demo)");
+renderBookings();
+}
+function renderBookings(){
+let h="";
+bookings.forEach((b,i)=>{
+h+=`<tr><td>${b.room}</td><td>${b.arr}</td><td>${b.dep}</td><td>${b.status}</td><td><button onclick="editBooking(${i})">Modify</button> <button onclick="cancelBooking(${i})">Cancel</button></td></tr>`;
+});bookingBody.innerHTML=h;}
+function editBooking(i){let d=prompt("New Arrival Date",bookings[i].arr);if(d)bookings[i].arr=d;renderBookings();}
+function cancelBooking(i){bookings[i].status="Cancelled";renderBookings();}
+function addRoom(){
+let t=rtype.value,p=+rprice.value,q=+rqty.value;
+let f=rooms.find(x=>x.type==t);
+if(f){f.price=p;f.qty=q;}else rooms.push({type:t,price:p,qty:q});
+rtype.value=rprice.value=rqty.value="";
+renderRooms();renderAdmin();
+}
+function renderAdmin(){
+let h="";
+rooms.forEach((r,i)=>h+=`<tr><td>${r.type}</td><td>₹${r.price}</td><td>${r.qty}</td><td><button onclick="rooms.splice(${i},1);renderRooms();renderAdmin()">Delete</button></td></tr>`);
+adminRooms.innerHTML=h;
+}
+renderRooms();renderAdmin();
+</script>
+</body></html>
