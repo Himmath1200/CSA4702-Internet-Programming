@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flight Reservation System</title>
+<style>
+body{margin:0;font-family:Arial;background:#eef5fb}
+header{background:#0a58ca;color:#fff;padding:15px;text-align:center}
+nav{display:flex;flex-wrap:wrap;justify-content:center;background:#083b8a;padding:8px}
+nav button{margin:4px;padding:10px;border:none;border-radius:5px;cursor:pointer}
+section{display:none;padding:20px}.active{display:block}
+.card{background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 6px #bbb;margin-bottom:15px}
+input,select,textarea{width:100%;padding:8px;margin:6px 0}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #ccc;padding:8px}
+th{background:#0a58ca;color:#fff}
+</style>
+</head>
+<body>
+<header><h1>✈ Flight Reservation System</h1></header>
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('login')">Login</button>
+<button onclick="show('register')">Register</button>
+<button onclick="show('search')">Search Flights</button>
+<button onclick="show('tickets')">My Tickets</button>
+<button onclick="show('status')">Booking Status</button>
+<button onclick="show('feedback')">Feedback</button>
+<button onclick="show('admin')">Admin</button>
+<button onclick="show('report')">Report</button>
+</nav>
+
+<section id="home" class="active"><div class="card"><h2>Welcome</h2><p>Single-file Flight Reservation System demo.</p></div></section>
+
+<section id="login"><div class="card">
+<h2>Administrator / User Login</h2>
+<select id="role"><option>User</option><option>Administrator</option></select>
+<input placeholder="Username"><input type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<button onclick="alert('Forgot Password Demo')">Forgot Password</button>
+<p id="msg"></p>
+</div></section>
+
+<section id="register"><div class="card">
+<h2>Register</h2>
+<input placeholder="Name"><input placeholder="Email"><input placeholder="Phone">
+<button onclick="alert('Registered Successfully')">Create Account</button>
+</div></section>
+
+<section id="search">
+<div class="card">
+<h2>Search Flights</h2>
+<input id="q" onkeyup="renderFlights()" placeholder="Destination / Flight">
+<table><thead><tr><th>Flight</th><th>Route</th><th>Class</th><th>Fare</th><th>Seats</th><th></th></tr></thead>
+<tbody id="flightBody"></tbody></table>
+</div>
+<div class="card">
+<h3>Book Ticket</h3>
+<input id="pname" placeholder="Passenger Name">
+<select id="seat"><option>Window</option><option>Aisle</option><option>Middle</option></select>
+<select id="pay"><option>Card</option><option>UPI</option><option>Net Banking</option></select>
+<button onclick="book()">Proceed to Payment</button>
+</div>
+</section>
+
+<section id="tickets"><div class="card">
+<h2>My Tickets</h2>
+<table><thead><tr><th>Ticket</th><th>Flight</th><th>Passenger</th><th>Status</th><th>Action</th></tr></thead>
+<tbody id="ticketBody"></tbody></table>
+</div></section>
+
+<section id="status"><div class="card">
+<h2>View Booking Status</h2>
+<input id="tid" placeholder="Enter Ticket ID">
+<button onclick="checkStatus()">Check</button>
+<p id="statusOut"></p>
+</div></section>
+
+<section id="feedback"><div class="card">
+<h2>Customer Feedback</h2>
+<textarea id="fb"></textarea>
+<button onclick="sendFeedback()">Submit</button>
+<ul id="fbList"></ul>
+</div></section>
+
+<section id="admin"><div class="card">
+<h2>Admin Panel</h2>
+<input id="fname" placeholder="Flight">
+<input id="route" placeholder="Route">
+<input id="cls" placeholder="Class">
+<input id="fare" placeholder="Fare">
+<input id="seats" placeholder="Seats">
+<button onclick="addFlight()">Add / Update Flight</button>
+<table><thead><tr><th>Flight</th><th>Route</th><th>Seats</th><th>Action</th></tr></thead><tbody id="adminBody"></tbody></table>
+</div></section>
+
+<section id="report"><div class="card">
+<h2>Admin Report</h2>
+<p>Total Flights: <span id="rf"></span></p>
+<p>Total Bookings: <span id="rb"></span></p>
+<p>Total Feedback: <span id="rfb"></span></p>
+<button onclick="report()">Refresh</button>
+</div></section>
+
+<script>
+let flights=[
+{name:"AI101",route:"Chennai-Delhi",class:"Economy",fare:5500,seats:30},
+{name:"6E221",route:"Hyderabad-Mumbai",class:"Business",fare:8200,seats:18},
+{name:"SG450",route:"Bangalore-Kolkata",class:"Economy",fare:4700,seats:25}
+];
+let current=-1,tickets=[],feedback=[];
+
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");renderFlights();renderAdmin();renderTickets();report();}
+function login(){msg.innerHTML="Logged in as "+role.value;if(role.value=="Administrator")show("admin");else show("search");}
+function renderFlights(){
+let s=q.value.toLowerCase();
+flightBody.innerHTML=flights.filter(f=>f.name.toLowerCase().includes(s)||f.route.toLowerCase().includes(s))
+.map((f,i)=>`<tr><td>${f.name}</td><td>${f.route}</td><td>${f.class}</td><td>₹${f.fare}</td><td>${f.seats}</td><td><button onclick="current=${i};alert('Flight Selected')">Select</button></td></tr>`).join("");
+}
+function id(){return "ET"+Math.floor(100000+Math.random()*900000);}
+function book(){
+if(current<0)return alert("Select a flight");
+let t=id();
+tickets.push({id:t,flight:flights[current].name,name:pname.value,status:"Confirmed"});
+alert("Payment Successful via "+pay.value+"\nE-ticket: "+t+"\nConfirmation Email Sent (Demo)");
+renderTickets();report();
+}
+function renderTickets(){
+ticketBody.innerHTML=tickets.map((t,i)=>`<tr><td>${t.id}</td><td>${t.flight}</td><td>${t.name}</td><td>${t.status}</td><td><button onclick="printTicket(${i})">Print</button> <button onclick="cancel(${i})">Cancel</button></td></tr>`).join("");
+}
+function cancel(i){tickets[i].status="Cancelled";renderTickets();}
+function printTicket(i){alert("E-Ticket\nTicket: "+tickets[i].id+"\nFlight: "+tickets[i].flight+"\nPassenger: "+tickets[i].name);}
+function checkStatus(){let t=tickets.find(x=>x.id===tid.value.trim());statusOut.innerHTML=t?("Status: "+t.status):"Ticket Not Found";}
+function sendFeedback(){feedback.push(fb.value);fb.value="";fbList.innerHTML=feedback.map(x=>"<li>"+x+"</li>").join("");report();}
+function addFlight(){
+let f=flights.find(x=>x.name===fname.value);
+if(f){f.route=route.value;f.class=cls.value;f.fare=fare.value;f.seats=seats.value;}
+else flights.push({name:fname.value,route:route.value,class:cls.value,fare:fare.value,seats:seats.value});
+fname.value=route.value=cls.value=fare.value=seats.value="";
+renderFlights();renderAdmin();report();
+}
+function renderAdmin(){
+adminBody.innerHTML=flights.map((f,i)=>`<tr><td>${f.name}</td><td>${f.route}</td><td>${f.seats}</td><td><button onclick="flights.splice(${i},1);renderFlights();renderAdmin();report()">Delete</button></td></tr>`).join("");
+}
+function report(){rf.textContent=flights.length;rb.textContent=tickets.length;rfb.textContent=feedback.length;}
+renderFlights();renderAdmin();report();
+</script>
+</body></html>
