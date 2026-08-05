@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cake Ordering System</title>
+<style>
+body{margin:0;font-family:Arial;background:#f7f3f8}
+header{background:#c2185b;color:#fff;padding:15px;text-align:center}
+nav{display:flex;flex-wrap:wrap;justify-content:center;background:#880e4f;padding:8px}
+nav button{margin:4px;padding:10px;border:none;border-radius:5px;cursor:pointer}
+section{display:none;padding:20px}.active{display:block}
+.card{background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 6px #bbb;margin-bottom:15px}
+input,select,textarea{width:100%;padding:8px;margin:6px 0}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #ccc;padding:8px}
+th{background:#c2185b;color:#fff}
+</style>
+</head>
+<body>
+<header><h1>🎂 Online Cake Ordering System</h1></header>
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('login')">Login</button>
+<button onclick="show('register')">Register</button>
+<button onclick="show('cakes')">Cakes</button>
+<button onclick="show('cart')">Cart</button>
+<button onclick="show('orders')">My Orders</button>
+<button onclick="show('admin')">Admin</button>
+</nav>
+
+<section id="home" class="active"><div class="card"><h2>Welcome</h2><p>Single-file Cake Ordering System demo.</p></div></section>
+
+<section id="login"><div class="card">
+<h2>Login</h2>
+<select id="role"><option>Student</option><option>Admin</option></select>
+<input placeholder="Username"><input type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="loginMsg"></p>
+</div></section>
+
+<section id="register"><div class="card">
+<h2>Register</h2>
+<input placeholder="Name"><input placeholder="Email"><input placeholder="Phone">
+<button onclick="alert('Registration Successful')">Register</button>
+</div></section>
+
+<section id="cakes">
+<div class="card">
+<h2>Search Cakes</h2>
+<input id="search" onkeyup="render()" placeholder="Search">
+<select id="cat" onchange="render()"><option>All</option><option>Birthday</option><option>Wedding</option><option>Chocolate</option></select>
+<input id="max" type="number" placeholder="Max Price" onkeyup="render()">
+<table><thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Description</th><th></th></tr></thead><tbody id="cakeBody"></tbody></table>
+</div>
+</section>
+
+<section id="cart"><div class="card">
+<h2>Cart & Shipping</h2>
+<textarea id="addr" placeholder="Shipping Address"></textarea>
+<button onclick="placeOrder()">Place Order</button>
+<table><thead><tr><th>Cake</th><th>Price</th></tr></thead><tbody id="cartBody"></tbody></table>
+</div></section>
+
+<section id="orders"><div class="card">
+<h2>My Orders</h2>
+<table><thead><tr><th>Order</th><th>Address</th><th>Status</th></tr></thead><tbody id="orderBody"></tbody></table>
+</div></section>
+
+<section id="admin"><div class="card">
+<h2>Admin Panel</h2>
+<input id="name" placeholder="Cake Name">
+<input id="category" placeholder="Category">
+<input id="price" placeholder="Price">
+<input id="desc" placeholder="Description">
+<input placeholder="Upload Image (demo)">
+<button onclick="addCake()">Post Cake</button>
+<table><thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Action</th></tr></thead><tbody id="adminBody"></tbody></table>
+</div></section>
+
+<script>
+let cakes=[
+{name:"Chocolate Delight",cat:"Chocolate",price:600,desc:"Rich chocolate cake"},
+{name:"Birthday Special",cat:"Birthday",price:900,desc:"Custom birthday cake"},
+{name:"Wedding Premium",cat:"Wedding",price:2500,desc:"Luxury wedding cake"}
+];
+let cart=[],orders=[];
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");render();admin();drawCart();drawOrders();}
+function login(){loginMsg.innerHTML="Logged in as "+role.value;if(role.value=="Admin")show("admin");else show("cakes");}
+function render(){
+let s=search.value.toLowerCase(),c=cat.value,m=max.value;
+cakeBody.innerHTML=cakes.filter(x=>(c=="All"||x.cat==c)&&x.name.toLowerCase().includes(s)&&(!m||x.price<=m))
+.map((x,i)=>`<tr><td>${x.name}</td><td>${x.cat}</td><td>₹${x.price}</td><td>${x.desc}</td><td><button onclick="cart.push(cakes[${i}]);drawCart();alert('Added to Cart')">Add</button></td></tr>`).join("");
+}
+function drawCart(){cartBody.innerHTML=cart.map(c=>`<tr><td>${c.name}</td><td>₹${c.price}</td></tr>`).join("");}
+function placeOrder(){
+if(!cart.length)return alert("Cart is empty");
+orders.push({items:cart.map(x=>x.name).join(", "),addr:addr.value,status:"Preparing"});
+cart=[];drawCart();drawOrders();
+alert("Payment Successful (Demo)\nOrder Confirmed\nConfirmation Email Sent (Demo)");
+}
+function drawOrders(){orderBody.innerHTML=orders.map(o=>`<tr><td>${o.items}</td><td>${o.addr}</td><td>${o.status}</td></tr>`).join("");}
+function addCake(){
+let f=cakes.find(x=>x.name==name.value);
+if(f){f.cat=category.value;f.price=price.value;f.desc=desc.value;}
+else cakes.push({name:name.value,cat:category.value,price:+price.value,desc:desc.value});
+name.value=category.value=price.value=desc.value="";
+render();admin();
+}
+function admin(){adminBody.innerHTML=cakes.map((c,i)=>`<tr><td>${c.name}</td><td>${c.cat}</td><td>₹${c.price}</td><td><button onclick="cakes.splice(${i},1);render();admin()">Delete</button></td></tr>`).join("");}
+render();admin();
+</script>
+</body></html>
